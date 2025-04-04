@@ -21,7 +21,11 @@
 		},
 		"ghcr.io/devcontainers-extra/features/rclone:1": {
 
+		},
+		"ghcr.io/devcontainers/features/python:1.7.1": {
+			
 		}
+		
 	},
 	// Use this environment variable if you need to bind mount your local source code into a new container.
 	"remoteEnv": {
