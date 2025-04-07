@@ -6,7 +6,7 @@ from datetime import datetime
 
 def main():
 
-    directory_path = "./suda"
+    directory_path = "/tmp/backup"
 
    # os.mkdir(directory_path)
 
@@ -34,7 +34,7 @@ def main():
 
     shutil.make_archive(archive_name, 'zip', directory_path)
 
-    upload_to_s3(archive_name, archive_name, s3_upload, bucket_name_upload)
+    upload_to_s3(archive_name + ".zip", archive_name + ".zip", s3_upload, bucket_name_upload)
 
 def download_dir(prefix, local, bucket, client):
     """
