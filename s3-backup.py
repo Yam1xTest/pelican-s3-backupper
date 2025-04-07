@@ -1,4 +1,4 @@
-import rclone
+import boto3
 import os
 import shutil
 from datetime import datetime
@@ -6,22 +6,82 @@ from datetime import datetime
 
 def main():
 
-    cfg_path = r'.rclone.conf'
+    directory_path = "./suda"
 
-    with open(cfg_path) as f:
-        cfg = f.read()
+   # os.mkdir(directory_path)
 
     archive_name = "s3-backup" + '_' + datetime.strftime(datetime.utcnow(), "%Y.%m.%d.%H-%M-%S") + 'UTC' + '.backup'
+    
+    s3_download = boto3.client(
+        's3',
+        aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID_DOWNLOAD'),
+        aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY_DOWNLOAD'),
+        endpoint_url=os.getenv('AWS_HOST_DOWNLOAD'),
+    )
 
-    # s3-1:pelican-local-env is source
-    rclone.with_config(cfg).copy("s3-1:pelican-local-env", "/tmp/s3-backup", flags=["--transfers=256"])
+    bucket_name_download = os.getenv('AWS_BUCKET_NAME_DOWNLOAD')
+    
+    s3_upload = boto3.client(
+        's3',
+        aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID_UPLOAD'),
+        aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY_UPLOAD'),
+        endpoint_url=os.getenv('AWS_HOST_UPLOAD'),
+    )
+    
+    bucket_name_upload = os.getenv('AWS_BUCKET_NAME_UPLOAD')
+    
+    download_dir("", directory_path, bucket_name_download, s3_download)
 
-    shutil.make_archive(archive_name, 'zip', "/tmp/s3-backup")
+    shutil.make_archive(archive_name, 'zip', directory_path)
 
-    # s3-2:backup is destination
-    rclone.with_config(cfg).copy(archive_name + ".zip", "s3-2:backup", flags=["--transfers=256"])
+    upload_to_s3(archive_name, archive_name, s3_upload, bucket_name_upload)
+
+def download_dir(prefix, local, bucket, client):
+    """
+    params:
+    - prefix: pattern to match in s3
+    - local: local path to folder in which to place files
+    - bucket: s3 bucket with target contents
+    - client: initialized s3 client object
+    """
+    keys = []
+    dirs = []
+    next_token = ''
+    base_kwargs = {
+        'Bucket':bucket,
+        'Prefix':prefix,
+    }
+    while next_token is not None:
+        kwargs = base_kwargs.copy()
+        if next_token != '':
+            kwargs.update({'ContinuationToken': next_token})
+        results = client.list_objects_v2(**kwargs)
+        contents = results.get('Contents')
+        for i in contents:
+            k = i.get('Key')
+            if k[-1] != '/':
+                keys.append(k)
+            else:
+                dirs.append(k)
+        next_token = results.get('NextContinuationToken')
+    for d in dirs:
+        dest_pathname = os.path.join(local, d)
+        if not os.path.exists(os.path.dirname(dest_pathname)):
+            os.makedirs(os.path.dirname(dest_pathname))
+    for k in keys:
+        dest_pathname = os.path.join(local, k)
+        if not os.path.exists(os.path.dirname(dest_pathname)):
+            os.makedirs(os.path.dirname(dest_pathname))
+        client.download_file(bucket, k, dest_pathname)
+
+     
+def upload_to_s3(source_path, destination_filename, s3, bucket):
+    with open(source_path, "rb") as data:
+        s3.upload_fileobj(data, bucket, destination_filename)
+    
 
 
+    
 if __name__ == '__main__':
 
     main()
