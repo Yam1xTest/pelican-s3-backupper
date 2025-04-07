@@ -85,4 +85,21 @@ extraDeploy:
               containers:
                 - name: s3-backup-cron
                   image: ghcr.io/tourmalinecore/pelican-s3-backupper:latest
+                  env:
+                      - name: AWS_HOST_DOWNLOAD
+                        value: {{ .Values.extraConfigMapEnvVars.AWS_HOST_DOWNLOAD }}
+                      - name: AWS_ACCESS_KEY_ID_DOWNLOAD
+                        value: {{ .Values.extraConfigMapEnvVars.AWS_ACCESS_KEY_ID_DOWNLOAD }}
+                      - name: AWS_SECRET_ACCESS_KEY_DOWNLOAD
+                        value: {{ .Values.extraConfigMapEnvVars.AWS_SECRET_ACCESS_KEY_DOWNLOAD }}
+                      - name: AWS_BUCKET_NAME_DOWNLOAD
+                        value: {{ .Values.extraConfigMapEnvVars.AWS_BUCKET_NAME_DOWNLOAD }}
+                      - name: AWS_HOST_UPLOAD
+                        value: {{ .Values.extraConfigMapEnvVars.AWS_HOST_UPLOAD }}
+                      - name: AWS_ACCESS_KEY_ID_UPLOAD
+                        value: {{ .Values.extraConfigMapEnvVars.AWS_ACCESS_KEY_ID_UPLOAD }}
+                      - name: AWS_SECRET_ACCESS_KEY_UPLOAD
+                        value: {{ .Values.extraConfigMapEnvVars.AWS_SECRET_ACCESS_KEY_UPLOAD }}
+                      - name: AWS_BUCKET_NAME_UPLOAD
+                        value: {{ .Values.extraConfigMapEnvVars.AWS_BUCKET_NAME_UPLOAD }}
                   imagePullPolicy: Always
