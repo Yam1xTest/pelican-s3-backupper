@@ -3,7 +3,7 @@ kind: CronJob
 metadata:
   name: s3-backup-cron
 spec:
-  schedule: "*/1 * * * *"
+  schedule: {{ .Values.extraConfigMapEnvVars.SCHEDULE }}
   successfulJobsHistoryLimit: 2
   concurrencyPolicy: Replace
   jobTemplate:
