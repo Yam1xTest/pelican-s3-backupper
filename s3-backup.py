@@ -15,8 +15,6 @@ def main():
         aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY_DOWNLOAD'),
         endpoint_url=os.getenv('AWS_HOST_DOWNLOAD'),
     )
-
-    bucket_name_download = os.getenv('AWS_BUCKET_NAME_DOWNLOAD')
     
     s3_upload = boto3.client(
         's3',
@@ -24,7 +22,8 @@ def main():
         aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY_UPLOAD'),
         endpoint_url=os.getenv('AWS_HOST_UPLOAD'),
     )
-    
+
+    bucket_name_download = os.getenv('AWS_BUCKET_NAME_DOWNLOAD')
     bucket_name_upload = os.getenv('AWS_BUCKET_NAME_UPLOAD')
     
     download_dir(directory_path, bucket_name_download, s3_download)
@@ -54,9 +53,6 @@ def download_dir(local, bucket, client):
 
     while next_token is not None:
         kwargs = base_kwargs.copy()
-
-        if next_token != '':
-            kwargs.update({'ContinuationToken': next_token})
         
         results = client.list_objects_v2(**kwargs)
 
@@ -85,6 +81,7 @@ def download_dir(local, bucket, client):
             os.makedirs(os.path.dirname(dest_pathname))
         
         client.download_file(bucket, k, dest_pathname)
+    
 
      
 def upload_to_s3(path, s3, bucket):
