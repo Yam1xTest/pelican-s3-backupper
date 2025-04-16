@@ -7,7 +7,7 @@ from datetime import datetime
 def main():
     directory_path = "/tmp/backup"
 
-    archive_name = "s3-backup" + '_' + datetime.strftime(datetime.utcnow(), "%Y.%m.%d.%H-%M-%S") + 'UTC'
+    archive_name = "s3-backup" + '_' + datetime.strftime(datetime.utcnow(), "%Y.%m.%d.%H:%M:%S") + 'UTC'
     
     s3_download = boto3.client(
         's3',
