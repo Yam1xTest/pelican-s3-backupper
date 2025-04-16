@@ -6,11 +6,22 @@ from datetime import datetime
 
 def main():
 
-    
+    path = "/tmp/backup"
 
-    shutil.unpack_archive("test.zip", "/tmp/backup")
-
-    rclone.copy("/tmp/backup", "vk:pelican-media-assets")
+    if(os.path.exists(path)):
+        if(not os.listdir(path)):
+            print("нет файлов")
+            shutil.unpack_archive("test.zip", "/tmp/backup")
+            print(os.listdir(path))
+            rclone.copy("/tmp/backup", "s3:pelican-local-env")
+            shutil.rmtree(path)
+    else:
+        print("нет файлов2")
+        os.mkdir(path)
+        shutil.unpack_archive("test.zip", "/tmp/backup")
+        print(os.listdir(path))
+        rclone.copy("/tmp/backup", "s3:pelican-local-env")
+        shutil.rmtree(path)
 
 
 
