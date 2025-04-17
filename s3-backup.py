@@ -8,22 +8,18 @@ def main():
 
     path = "/tmp/backup"
 
-    bucket="s3:pelican-local-env"
+    bucket="s3:pelican-staging/media-assets"
 
-    backup_filename = "test.zip"
+    backup_filename = "s3-backup_2025.04.16.09-51-01UTC.backup.zip"
 
     if(os.path.exists(path)):
         if(not os.listdir(path)):
-            print("нет файлов")
             shutil.unpack_archive(backup_filename, "/tmp/backup")
-            print(os.listdir(path))
             rclone.copy("/tmp/backup", bucket)
             shutil.rmtree(path)
     else:
-        print("нет файлов2")
         os.mkdir(path)
         shutil.unpack_archive(backup_filename, "/tmp/backup")
-        print(os.listdir(path))
         rclone.copy("/tmp/backup", bucket)
         shutil.rmtree(path)
 
