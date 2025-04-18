@@ -1,4 +1,4 @@
-import rclone
+import boto3
 import os
 import shutil
 from datetime import datetime
@@ -6,22 +6,48 @@ from datetime import datetime
 
 def main():
 
-    cfg_path = r'.rclone.conf'
+    path = "/tmp/backup"
 
-    with open(cfg_path) as f:
-        cfg = f.read()
+    bucket="pelican-local-env"
 
-    archive_name = "s3-backup" + '_' + datetime.strftime(datetime.utcnow(), "%Y.%m.%d.%H-%M-%S") + 'UTC' + '.backup'
+    backup_filename = "test.zip"
 
-    # s3-1:pelican-local-env is source
-    rclone.with_config(cfg).copy("s3-1:pelican-local-env", "/tmp/s3-backup", flags=["--transfers=256"])
+    s3_upload = boto3.client(
+        's3',
+        aws_access_key_id="secret",
+        aws_secret_access_key="secret",
+        endpoint_url="url"
+    )
 
-    shutil.make_archive(archive_name, 'zip', "/tmp/s3-backup")
+    if(os.path.exists(path)):
+        if(not os.listdir(path)):
+            shutil.unpack_archive(backup_filename, path)
+            for item in os.listdir(path):
+                upload_to_s3(f"{path}/{item}", s3_upload, bucket, item)
+            shutil.rmtree(path)
+        else:
+            shutil.rmtree(path)
+            os.mkdir(path)
+            shutil.unpack_archive(backup_filename, path)
+            for item in os.listdir(path):
+                upload_to_s3(f"{path}/{item}", s3_upload, bucket, item)
+            shutil.rmtree(path)
 
-    # s3-2:backup is destination
-    rclone.with_config(cfg).copy(archive_name + ".zip", "s3-2:backup", flags=["--transfers=256"])
+    else:
+        os.mkdir(path)
+        shutil.unpack_archive(backup_filename, path)
+
+        for item in os.listdir(path):
+                upload_to_s3(f"{path}/{item}", s3_upload, bucket, item)
+
+        shutil.rmtree(path)
 
 
+def upload_to_s3(path, s3, bucket, key):
+    with open(path, "rb") as data:
+        s3.upload_fileobj(Fileobj = data, Bucket = bucket, Key = key)
+    
+    
 if __name__ == '__main__':
 
     main()
