@@ -5,39 +5,45 @@ from datetime import datetime
 
 
 def main():
-    directory_path = "/tmp/backup"
+    temp_directory_for_files_from_source = "/tmp/backup"
+    bucket_subfolder_name = os.getenv('SOURCE_AWS_BUCKET_SUBFOLDER_NAME')
 
-    archive_name = 'pelican-local-env-s3-' + datetime.strftime(datetime.utcnow(), "%Y-%m-%dT%H-%M-%S") + '.backup'
+    archive_name = os.getenv('PELICAN_FILENAME_PREFIX') + '-' + datetime.strftime(datetime.utcnow(), "%Y-%m-%dT%H-%M-%S") + '.backup'
     
-    s3_download = boto3.client(
+    source_s3 = boto3.client(
         's3',
-        aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID_DOWNLOAD'),
-        aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY_DOWNLOAD'),
-        endpoint_url=os.getenv('AWS_HOST_DOWNLOAD'),
+        aws_access_key_id=os.getenv('SOURCE_AWS_ACCESS_KEY_ID'),
+        aws_secret_access_key=os.getenv('SOURCE_AWS_SECRET_ACCESS_KEY'),
+        endpoint_url=os.getenv('SOURCE_AWS_HOST'),
     )
     
-    s3_upload = boto3.client(
+    destination_s3 = boto3.client(
         's3',
-        aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID_UPLOAD'),
-        aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY_UPLOAD'),
-        endpoint_url=os.getenv('AWS_HOST_UPLOAD'),
+        aws_access_key_id=os.getenv('DESTINATION_AWS_ACCESS_KEY_ID'),
+        aws_secret_access_key=os.getenv('DESTINATION_AWS_SECRET_ACCESS_KEY'),
+        endpoint_url=os.getenv('DESTINATION_AWS_HOST'),
     )
 
-    bucket_name_download = os.getenv('AWS_BUCKET_NAME_DOWNLOAD')
-    bucket_name_upload = os.getenv('AWS_BUCKET_NAME_UPLOAD')
-    
-    download_dir(directory_path, bucket_name_download, s3_download)
+    source_bucket_name = os.getenv('SOURCE_AWS_BUCKET_NAME')
+    destination_bucket_name = os.getenv('DESTINATION_AWS_BUCKET_NAME')
 
-    if os.path.exists(directory_path):
+    download_dir(temp_directory_for_files_from_source, source_bucket_name, source_s3, bucket_subfolder_name)
 
-        shutil.make_archive(archive_name, 'zip', directory_path)
+    if os.path.exists(temp_directory_for_files_from_source):
+        
+        shutil.make_archive(archive_name, 'zip', temp_directory_for_files_from_source + "/" + bucket_subfolder_name)
 
-        upload_to_s3(archive_name + ".zip", s3_upload, bucket_name_upload)
+        upload_to_s3(archive_name + ".zip", destination_s3, destination_bucket_name)
 
-        shutil.rmtree(directory_path)
+        shutil.rmtree(temp_directory_for_files_from_source)
         os.remove(archive_name + ".zip")
+    
+    else:
+        raise Exception("No such directory: '%s'" %(temp_directory_for_files_from_source))
+    
 
-def download_dir(local, bucket, client):
+# Reference: https://stackoverflow.com/a/56267603
+def download_dir(local, bucket, client, bucket_subfolder_name):
     """
     params:
     - local: local path to folder in which to place files
@@ -48,38 +54,26 @@ def download_dir(local, bucket, client):
     dirs = []
     next_token = ''
     base_kwargs = {
-        'Bucket':bucket,
+        'Bucket': bucket,
+        'Prefix': bucket_subfolder_name
     }
 
-    while next_token is not None:
-        kwargs = base_kwargs.copy()
-        
-        results = client.list_objects_v2(**kwargs)
+    kwargs = base_kwargs.copy()
+    results = client.list_objects_v2(**kwargs)
 
-        contents = results.get('Contents')
+    contents = results.get('Contents')
 
-        if contents is not None:
-            for i in contents:
-                k = i.get('Key')
-                if k[-1] != '/':
-                    keys.append(k)
-                else:
-                    dirs.append(k)
-
-        next_token = results.get('NextContinuationToken')
-
-    for d in dirs:
-        dest_pathname = os.path.join(local, d)
-
-        if not os.path.exists(os.path.dirname(dest_pathname)):
-            os.makedirs(os.path.dirname(dest_pathname))
+    if contents is not None:
+        for i in contents:
+            k = i.get('Key')
+            if k[-1] != '/':
+                keys.append(k)
 
     for k in keys:
-        dest_pathname = os.path.join(local, k)
-
+        dest_pathname = os.path.join(local, k)      
         if not os.path.exists(os.path.dirname(dest_pathname)):
             os.makedirs(os.path.dirname(dest_pathname))
-        
+
         client.download_file(bucket, k, dest_pathname)
     
 
