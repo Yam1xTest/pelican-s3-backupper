@@ -1,4 +1,14 @@
 image:
-  tag: "latest"
+  registry: ghcr.io
+  repository: tourmalinecore/pelican-s3-backupper
+  tag: ""
+  pullPolicy: Always
+
+resources:
+  limits:
+    memory: 512Mi
+  requests:
+    cpu: 1m
+    memory: 256Mi
 
 extraConfigMapEnvVars:
