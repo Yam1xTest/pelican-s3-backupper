@@ -6,26 +6,26 @@ from datetime import datetime
 
 def main():
     temp_directory_for_files_from_source = "/tmp/backup"
-    bucket_subfolder_name = os.getenv('SOURCE_AWS_BUCKET_SUBFOLDER_NAME')
+    bucket_subfolder_name = os.getenv('SOURCE_S3_AWS_BUCKET_SUBFOLDER_NAME')
 
-    archive_name = os.getenv('PELICAN_FILENAME_PREFIX') + '-' + datetime.strftime(datetime.utcnow(), "%Y-%m-%dT%H-%M-%S") + '.backup'
+    archive_name = os.getenv('S3_BACKUP_FILENAME_PREFIX') + '-' + datetime.strftime(datetime.utcnow(), "%Y-%m-%dT%H-%M-%S") + '.backup'
     
     source_s3 = boto3.client(
         's3',
-        aws_access_key_id=os.getenv('SOURCE_AWS_ACCESS_KEY_ID'),
-        aws_secret_access_key=os.getenv('SOURCE_AWS_SECRET_ACCESS_KEY'),
-        endpoint_url=os.getenv('SOURCE_AWS_HOST'),
+        aws_access_key_id=os.getenv('SOURCE_S3_AWS_ACCESS_KEY_ID'),
+        aws_secret_access_key=os.getenv('SOURCE_S3_AWS_SECRET_ACCESS_KEY'),
+        endpoint_url=os.getenv('SOURCE_S3_AWS_HOST'),
     )
     
     destination_s3 = boto3.client(
         's3',
-        aws_access_key_id=os.getenv('DESTINATION_AWS_ACCESS_KEY_ID'),
-        aws_secret_access_key=os.getenv('DESTINATION_AWS_SECRET_ACCESS_KEY'),
-        endpoint_url=os.getenv('DESTINATION_AWS_HOST'),
+        aws_access_key_id=os.getenv('DESTINATION_S3_AWS_ACCESS_KEY_ID'),
+        aws_secret_access_key=os.getenv('DESTINATION_S3_AWS_SECRET_ACCESS_KEY'),
+        endpoint_url=os.getenv('DESTINATION_S3_AWS_HOST'),
     )
 
-    source_bucket_name = os.getenv('SOURCE_AWS_BUCKET_NAME')
-    destination_bucket_name = os.getenv('DESTINATION_AWS_BUCKET_NAME')
+    source_bucket_name = os.getenv('SOURCE_S3_AWS_BUCKET_NAME')
+    destination_bucket_name = os.getenv('DESTINATION_S3_AWS_BUCKET_NAME')
 
     download_dir(temp_directory_for_files_from_source, source_bucket_name, source_s3, bucket_subfolder_name)
 
@@ -48,6 +48,7 @@ def download_dir(local, bucket, client, bucket_subfolder_name):
     params:
     - local: local path to folder in which to place files
     - bucket: s3 bucket with target contents
+    - bucket_subfolder_name: s3 bucket subfolder (if exists)
     - client: initialized s3 client object
     """
     keys = []
