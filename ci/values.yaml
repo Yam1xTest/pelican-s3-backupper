@@ -1,7 +1,6 @@
 image:
   registry: ghcr.io
   repository: tourmalinecore/pelican-s3-backupper
-  tag: ""
   pullPolicy: Always
 
 resources:
