@@ -4,7 +4,7 @@ metadata:
   name: {{ .Release.Name }}
   namespace: {{ .Release.Namespace }}
 spec:
-  schedule: "{{ .Values.extraConfigMapEnvVars.BACKUP_SCHEDULE }}"
+  schedule: "{{ .Values.extraConfigMapEnvVars.BACKUPS_SCHEDULE }}"
   # How many completed jobs should be kept
   successfulJobsHistoryLimit: 1
   # We use concurrencyPolicy: Forbid to make sure that a new cronjob doesn't kill a previously started cronjob before it's completed
@@ -26,24 +26,24 @@ spec:
                   cpu: {{ .Values.resources.requests.cpu }}
                   memory: {{ .Values.resources.requests.memory }}
               env:
-                - name: S3_BACKUP_FILENAME_PREFIX
-                  value: {{ .Values.extraConfigMapEnvVars.S3_BACKUP_FILENAME_PREFIX }}
-                - name: AWS_ENDPOINT
-                  value: {{ .Values.extraConfigMapEnvVars.AWS_ENDPOINT }}
-                - name: AWS_ACCESS_KEY_ID
-                  value: {{ .Values.extraConfigMapEnvVars.AWS_ACCESS_KEY_ID }}
-                - name: AWS_ACCESS_SECRET_KEY
-                  value: {{ .Values.extraConfigMapEnvVars.AWS_ACCESS_SECRET_KEY }}
-                - name: AWS_BUCKET
-                  value: {{ .Values.extraConfigMapEnvVars.AWS_BUCKET }}
-                - name: AWS_BUCKET_SUBFOLDER_NAME
-                  value: {{ .Values.extraConfigMapEnvVars.AWS_BUCKET_SUBFOLDER_NAME }}
-                - name: BACKUP_AWS_ENDPOINT
-                  value: {{ .Values.extraConfigMapEnvVars.BACKUP_AWS_ENDPOINT }}
-                - name: BACKUP_AWS_ACCESS_KEY_ID
-                  value: {{ .Values.extraConfigMapEnvVars.BACKUP_AWS_ACCESS_KEY_ID }}
-                - name: BACKUP_AWS_ACCESS_SECRET_KEY
-                  value: {{ .Values.extraConfigMapEnvVars.BACKUP_AWS_ACCESS_SECRET_KEY }}
-                - name: BACKUP_AWS_BUCKET
-                  value: {{ .Values.extraConfigMapEnvVars.BACKUP_AWS_BUCKET }}
+                  - name: S3_BACKUPS_FILENAME_PREFIX
+                    value: {{ .Values.extraConfigMapEnvVars.S3_BACKUPS_FILENAME_PREFIX }}
+                  - name: SOURCE_S3_AWS_ENDPOINT
+                    value: {{ .Values.extraConfigMapEnvVars.SOURCE_S3_AWS_ENDPOINT }}
+                  - name: SOURCE_S3_AWS_ACCESS_KEY_ID
+                    value: {{ .Values.extraConfigMapEnvVars.SOURCE_S3_AWS_ACCESS_KEY_ID }}
+                  - name: SOURCE_S3_AWS_SECRET_ACCESS_KEY
+                    value: {{ .Values.extraConfigMapEnvVars.SOURCE_S3_AWS_SECRET_ACCESS_KEY }}
+                  - name: SOURCE_S3_AWS_BUCKET_NAME
+                    value: {{ .Values.extraConfigMapEnvVars.SOURCE_S3_AWS_BUCKET_NAME }}
+                  - name: SOURCE_S3_AWS_BUCKET_SUBFOLDER_NAME
+                    value: {{ .Values.extraConfigMapEnvVars.SOURCE_S3_AWS_BUCKET_SUBFOLDER_NAME }}
+                  - name: DESTINATION_S3_AWS_HOST
+                    value: {{ .Values.extraConfigMapEnvVars.DESTINATION_S3_AWS_HOST }}
+                  - name: DESTINATION_S3_AWS_ACCESS_KEY_ID
+                    value: {{ .Values.extraConfigMapEnvVars.DESTINATION_S3_AWS_ACCESS_KEY_ID }}
+                  - name: DESTINATION_S3_AWS_SECRET_ACCESS_KEY
+                    value: {{ .Values.extraConfigMapEnvVars.DESTINATION_S3_AWS_SECRET_ACCESS_KEY }}
+                  - name: DESTINATION_S3_AWS_BUCKET_NAME
+                    value: {{ .Values.extraConfigMapEnvVars.DESTINATION_S3_AWS_BUCKET_NAME }}
               imagePullPolicy: {{ .Values.image.pullPolicy }}
