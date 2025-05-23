@@ -38,8 +38,8 @@ spec:
                     value: {{ .Values.extraConfigMapEnvVars.SOURCE_S3_AWS_BUCKET_NAME }}
                   - name: SOURCE_S3_AWS_BUCKET_SUBFOLDER_NAME
                     value: {{ .Values.extraConfigMapEnvVars.SOURCE_S3_AWS_BUCKET_SUBFOLDER_NAME }}
-                  - name: DESTINATION_S3_AWS_HOST
-                    value: {{ .Values.extraConfigMapEnvVars.DESTINATION_S3_AWS_HOST }}
+                  - name: DESTINATION_S3_AWS_ENDPOINT
+                    value: {{ .Values.extraConfigMapEnvVars.DESTINATION_S3_AWS_ENDPOINT }}
                   - name: DESTINATION_S3_AWS_ACCESS_KEY_ID
                     value: {{ .Values.extraConfigMapEnvVars.DESTINATION_S3_AWS_ACCESS_KEY_ID }}
                   - name: DESTINATION_S3_AWS_SECRET_ACCESS_KEY
