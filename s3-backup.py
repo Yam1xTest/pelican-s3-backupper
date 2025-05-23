@@ -8,20 +8,20 @@ def main():
     temp_directory_for_files_from_source = "/tmp/backup"
     bucket_subfolder_name = os.getenv('SOURCE_S3_AWS_BUCKET_SUBFOLDER_NAME')
 
-    archive_name = os.getenv('S3_BACKUP_FILENAME_PREFIX') + '-' + datetime.strftime(datetime.utcnow(), "%Y-%m-%dT%H-%M-%S") + '.backup'
+    archive_name = os.getenv('S3_BACKUPS_FILENAME_PREFIX') + '-' + datetime.strftime(datetime.utcnow(), "%Y-%m-%dT%H-%M-%S") + '.backup'
     
     source_s3 = boto3.client(
         's3',
         aws_access_key_id=os.getenv('SOURCE_S3_AWS_ACCESS_KEY_ID'),
         aws_secret_access_key=os.getenv('SOURCE_S3_AWS_SECRET_ACCESS_KEY'),
-        endpoint_url=os.getenv('SOURCE_S3_AWS_HOST'),
+        endpoint_url=os.getenv('SOURCE_S3_AWS_ENDPOINT'),
     )
     
     destination_s3 = boto3.client(
         's3',
         aws_access_key_id=os.getenv('DESTINATION_S3_AWS_ACCESS_KEY_ID'),
         aws_secret_access_key=os.getenv('DESTINATION_S3_AWS_SECRET_ACCESS_KEY'),
-        endpoint_url=os.getenv('DESTINATION_S3_AWS_HOST'),
+        endpoint_url=os.getenv('DESTINATION_S3_AWS_ENDPOINT'),
     )
 
     source_bucket_name = os.getenv('SOURCE_S3_AWS_BUCKET_NAME')
