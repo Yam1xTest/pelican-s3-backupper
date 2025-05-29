@@ -14,7 +14,9 @@ jobs:
     # without this it cannot login to the registry
     secrets: inherit
 
+jobs:
   e2e_test:
+    needs: push_to_registry
     name: Run E2E tests
     runs-on: ubuntu-22.04
     
