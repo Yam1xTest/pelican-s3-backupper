@@ -2,7 +2,7 @@ name: E2E Tests
 
 on:
   workflow_run:
-    workflows: ["Docker Build and Push"]
+    workflows: ["build and push to dockerhub"]
     types:
       - completed
 
