@@ -1,11 +1,5 @@
 name: E2E Tests
 
-on:
-  workflow_run:
-    workflows: ["build and push to dockerhub"]
-    types:
-      - completed
-
 jobs:
   e2e_test:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
