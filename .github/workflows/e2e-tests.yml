@@ -1,0 +1,86 @@
+name: E2E Tests
+
+on:
+  workflow_run:
+    workflows: ["Docker Build and Push"]
+    types:
+      - completed
+
+jobs:
+  e2e_test:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    name: Run E2E tests
+    runs-on: ubuntu-22.04
+    
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_PASSWORD: admin
+          POSTGRES_USER: postgres
+          POSTGRES_DB: pelican_db
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install boto3 pytest
+
+      - name: Configure AWS credentials
+        run: |
+          mkdir -p ~/.aws
+          echo "[default]\naws_access_key_id=admin\naws_secret_access_key=rootPassword" > ~/.aws/credentials
+
+      - name: Start MinIO server
+        run: |
+          docker run -d -p 9000:9000 -p 9090:9090 --name minio \
+            -e "MINIO_ROOT_USER=admin" \
+            -e "MINIO_ROOT_PASSWORD=rootPassword" \
+            minio/minio server /data --console-address ":9090"
+          
+          echo "Waiting for MinIO..."
+          until curl -s http://localhost:9000/minio/health/live; do
+            sleep 1
+          done
+
+      - name: Configure MinIO
+        run: |
+          docker exec minio mc alias set local http://localhost:9000 admin rootPassword
+          docker exec minio mc mb local/pelican-backups
+          sleep 5
+
+      - name: Prepare test data in source S3
+        run: |
+          # Create test files in source bucket
+          docker exec minio mc alias set source http://localhost:9000 admin rootPassword
+          docker exec minio mc mb source/pelican-source
+          echo "test content" > test_file.txt
+          docker exec minio mc cp test_file.txt source/pelican-source/
+          rm test_file.txt
+
+      - name: Run S3 backup tests
+        env:
+          S3_BACKUPS_FILENAME_PREFIX: pelican-s3-backup
+          SOURCE_S3_AWS_ENDPOINT: http://localhost:9000
+          SOURCE_S3_AWS_ACCESS_KEY_ID: admin
+          SOURCE_S3_AWS_SECRET_ACCESS_KEY: rootPassword
+          SOURCE_S3_AWS_BUCKET_NAME: pelican-source
+          SOURCE_S3_AWS_BUCKET_SUBFOLDER_NAME: ""
+          DESTINATION_S3_AWS_ENDPOINT: http://localhost:9000
+          DESTINATION_S3_AWS_ACCESS_KEY_ID: admin
+          DESTINATION_S3_AWS_SECRET_ACCESS_KEY: rootPassword
+          DESTINATION_S3_AWS_BUCKET_NAME: pelican-backups
+        run: |
+          python s3-backup.py
+          python -m pytest -v s3_e2e_test.py
