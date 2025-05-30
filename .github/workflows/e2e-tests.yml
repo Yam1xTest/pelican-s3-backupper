@@ -55,7 +55,6 @@ jobs:
       - name: Prepare test data in source S3
         run: |
           docker exec minio mc alias set source http://localhost:9000 admin rootPassword
-          docker exec minio mb source/pelican-source || true
           echo "test content" | docker exec -i minio mc pipe source/pelican-source/test_file.txt
 
 

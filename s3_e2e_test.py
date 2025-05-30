@@ -68,7 +68,6 @@ def test_s3_backup_content():
 
     with zipfile.ZipFile(tmp_file, 'r') as zip_ref:
         files = zip_ref.namelist()
-        print(files)
         if not files:
             raise Exception("Backup archive is empty")
         
@@ -82,7 +81,6 @@ def test_s3_backup_content():
             file_key = obj['Key']
             source_files.append(file_key)
 
-        print(source_objects)
         if not any(f in source_files for f in files):
             raise Exception("Backup doesn't contain source files")
         
