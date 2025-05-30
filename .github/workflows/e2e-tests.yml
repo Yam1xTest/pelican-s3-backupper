@@ -34,15 +34,9 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
-
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install boto3 pytest
+          pip install boto3
 
       - name: Configure AWS credentials
         run: |
@@ -90,4 +84,4 @@ jobs:
           DESTINATION_S3_AWS_BUCKET_NAME: pelican-backups
         run: |
           python s3-backup.py
-          python -m pytest -v s3_e2e_test.py
+          python s3_e2e_test.py
