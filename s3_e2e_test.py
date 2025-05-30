@@ -54,7 +54,7 @@ def test_s3_backup_content():
 
     backup_files = []
     for obj in response['Contents']:
-        prefix = os.getenv('DB_BACKUPS_FILENAME_PREFIX')
+        prefix = os.getenv('S3_BACKUPS_FILENAME_PREFIX')
         if obj['Key'].startswith(prefix):
             backup_files.append(obj)
 
