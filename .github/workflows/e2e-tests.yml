@@ -11,13 +11,13 @@ jobs:
   # this is needed to wait for the new docker image to be build and published to the registry
   # so that we can use the image to run ui of the needed commit related version as part of local-env
   # the idea is taken from here https://stackoverflow.com/a/71489231
-  push_to_registry:
-    uses: ./.github/workflows/docker-build-and-push.yml
+  # push_to_registry:
+    # uses: ./.github/workflows/docker-build-and-push.yml
   #   # without this it cannot login to the registry
-    secrets: inherit
+    # secrets: inherit
   run-tests:
     runs-on: ubuntu-24.04
-    needs: push_to_registry
+    # needs: push_to_registry
     steps:
       - name: Checkout local-env
         uses: actions/checkout@v4
@@ -53,7 +53,7 @@ jobs:
 
       - name: test
         run: |
-          devcontainer exec --workspace-folder . kubectl get pods -A
+          ls
           
       - name: run e2e tests
         run: python e2e-tests.py
