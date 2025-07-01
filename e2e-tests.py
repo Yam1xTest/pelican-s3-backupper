@@ -1,5 +1,6 @@
 import boto3
 import os
+import zipfile
 
 def main():
     s3 = boto3.client(
@@ -10,11 +11,16 @@ def main():
     )
 
     objects_list = s3.list_objects_v2(Bucket="pelican-backups")
-    print(objects_list)
     try:
         contents = objects_list["Contents"]
+        print(contents[-1]['Key'])
         last_backup_size = contents[-1]['Size']
 
+        s3.download_file(Bucket="pelican-backups", Key=contents[-1]['Key'], Filename=contents[-1]['Key'])
+        zip_file_name = contents[-1]['Key']
+        with zipfile.ZipFile(zip_file_name, 'r') as zip_ref:
+            file_names = zip_ref.namelist()
+            print(file_names)
     except:
         raise Exception("Bucket is empty")
 
