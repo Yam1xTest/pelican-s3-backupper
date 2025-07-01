@@ -27,19 +27,18 @@ def main():
     source_bucket_name = os.getenv('SOURCE_S3_AWS_BUCKET_NAME')
     destination_bucket_name = os.getenv('DESTINATION_S3_AWS_BUCKET_NAME')
 
+    if not os.path.exists(temp_directory_for_files_from_source):
+        os.mkdir(temp_directory_for_files_from_source)
+
     download_dir(temp_directory_for_files_from_source, source_bucket_name, source_s3, bucket_subfolder_name)
-
-    if os.path.exists(temp_directory_for_files_from_source):
-        
-        shutil.make_archive(archive_name, 'zip', temp_directory_for_files_from_source + "/" + bucket_subfolder_name)
-
-        upload_to_s3(archive_name + ".zip", destination_s3, destination_bucket_name)
-
-        shutil.rmtree(temp_directory_for_files_from_source)
-        os.remove(archive_name + ".zip")
     
-    else:
-        raise Exception("No such directory: '%s'" %(temp_directory_for_files_from_source))
+    shutil.make_archive(archive_name, 'zip', temp_directory_for_files_from_source + "/" + bucket_subfolder_name)
+
+    upload_to_s3(archive_name + ".zip", destination_s3, destination_bucket_name)
+
+    shutil.rmtree(temp_directory_for_files_from_source)
+    os.remove(archive_name + ".zip")
+    
     
 
 # Reference: https://stackoverflow.com/a/56267603
@@ -53,7 +52,6 @@ def download_dir(local, bucket, client, bucket_subfolder_name):
     """
     keys = []
     dirs = []
-    next_token = ''
     base_kwargs = {
         'Bucket': bucket,
         'Prefix': bucket_subfolder_name
