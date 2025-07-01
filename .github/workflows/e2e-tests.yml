@@ -11,13 +11,13 @@ jobs:
   # this is needed to wait for the new docker image to be build and published to the registry
   # so that we can use the image to run ui of the needed commit related version as part of local-env
   # the idea is taken from here https://stackoverflow.com/a/71489231
-  push_to_registry:
-    uses: ./.github/workflows/docker-build-and-push.yml
-    # without this it cannot login to the registry
-    secrets: inherit
+  # push_to_registry:
+  #   uses: ./.github/workflows/docker-build-and-push.yml
+  #   # without this it cannot login to the registry
+  #   secrets: inherit
   run-tests:
     runs-on: ubuntu-24.04
-    needs: push_to_registry
+    # needs: push_to_registry
     steps:
       - name: Checkout local-env
         uses: actions/checkout@v4
@@ -29,7 +29,7 @@ jobs:
         with:
           runCmd: |
             # we need to override "latest" image tag of ui inside local-env to run e2e against the current commit ui version and not against latest from master
-            sed -i "0,/tag:.*/s//tag: \"sha-${{ github.sha }}\"/" deploy/values-pelican-s3-backupper.yaml.gotmpl
+            # sed -i "0,/tag:.*/s//tag: \"sha-${{ github.sha }}\"/" deploy/values-pelican-s3-backupper.yaml.gotmpl
             sed -i "0,/BACKUPS_SCHEDULE:.*/s//BACKUPS_SCHEDULE: \"*\/1 * * * *\"/" deploy/values-pelican-s3-backupper.yaml.gotmpl
             kind create cluster --name pelican --config kind-local-config.yaml --kubeconfig ./.pelican-cluster-kubeconfig
             
@@ -51,6 +51,10 @@ jobs:
       - name: wait 60 seconds
         run: sleep 60
 
+      - name: test
+        run: |
+          devcontainer exec --workspace-folder . kubectl get pods -A
+          
       - name: run e2e tests
         run: python e2e-tests.py
         env: 
