@@ -3,7 +3,7 @@ import os
 import shutil
 from datetime import datetime
 
-
+ 
 def main():
     temp_directory_for_files_from_source = "/tmp/backup"
     bucket_subfolder_name = os.getenv('SOURCE_S3_AWS_BUCKET_SUBFOLDER_NAME')
