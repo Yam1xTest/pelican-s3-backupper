@@ -30,18 +30,15 @@ def main():
     if not os.path.exists(temp_directory_for_files_from_source):
         os.mkdir(temp_directory_for_files_from_source)
 
-    if os.path.exists(temp_directory_for_files_from_source):
-        download_dir(temp_directory_for_files_from_source, source_bucket_name, source_s3, bucket_subfolder_name)
-        
-        shutil.make_archive(archive_name, 'zip', temp_directory_for_files_from_source + "/" + bucket_subfolder_name)
-
-        upload_to_s3(archive_name + ".zip", destination_s3, destination_bucket_name)
-
-        shutil.rmtree(temp_directory_for_files_from_source)
-        os.remove(archive_name + ".zip")
+    download_dir(temp_directory_for_files_from_source, source_bucket_name, source_s3, bucket_subfolder_name)
     
-    else:
-        raise Exception("No such directory: '%s'" %(temp_directory_for_files_from_source))
+    shutil.make_archive(archive_name, 'zip', temp_directory_for_files_from_source + "/" + bucket_subfolder_name)
+
+    upload_to_s3(archive_name + ".zip", destination_s3, destination_bucket_name)
+
+    shutil.rmtree(temp_directory_for_files_from_source)
+    os.remove(archive_name + ".zip")
+    
     
 
 # Reference: https://stackoverflow.com/a/56267603
